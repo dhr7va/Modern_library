@@ -52,14 +52,25 @@ getBooksButton.addEventListener("click", function () {
     if (!isNaN(year)) {
         const booksPublishedAfterYear = getBooksPublishedAfterYear(library, year);
 
+        // Clear existing list items
+        booksList.innerHTML = "";
+
         // Display the result in the books list
         if (booksPublishedAfterYear.length > 0) {
-            booksList.innerHTML = booksPublishedAfterYear.map(title => `<li>${title}</li>`).join("");
+            booksPublishedAfterYear.forEach(title => {
+                const listItem = document.createElement("li");
+                listItem.textContent = title;
+                booksList.appendChild(listItem);
+            });
         } else {
-            booksList.innerHTML = "<li>No books found published after " + year + "</li>";
+            const listItem = document.createElement("li");
+            listItem.textContent = "No books found published after " + year;
+            booksList.appendChild(listItem);
         }
     } else {
-        booksList.innerHTML = "<li>Invalid input. Please enter a valid year.</li>";
+        const listItem = document.createElement("li");
+        listItem.textContent = "Invalid input. Please enter a valid year.";
+        booksList.appendChild(listItem);
     }
 });
 
@@ -118,21 +129,98 @@ function getShortestBookByAuthor(library) {
     return result;
 }
 
-// Display the results on the webpage
-document.querySelector(".total-pages").textContent = "Total Number of Pages: " + getTotalPages(library);
-document.querySelector(".book-titles").innerHTML = getBookTitles(library).map(title => `<li>${title}</li>`).join("");
-document.querySelector(".average-pages").textContent = "Average Number of Pages: " + getAveragePages(library);
-document.querySelector(".longest-book").textContent = "Longest Book: " + getLongestBook(library);
-const authorsAndBooks = getAuthorsAndBooks(library);
-document.querySelector(".authors-and-books").innerHTML = Object.keys(authorsAndBooks).map(author => {
-    const books = authorsAndBooks[author].map(title => `<li>${title}</li>`).join("");
-    return `<li>${author}:<ul>${books}</ul></li>`;
-}).join("");
-const totalPagesByAuthor = getTotalPagesByAuthor(library);
-document.querySelector(".total-pages-by-author").innerHTML = Object.keys(totalPagesByAuthor).map(author => {
-    return `<li>${author}: ${totalPagesByAuthor[author]} pages</li>`;
-}).join("");
-const shortestBookByAuthor = getShortestBookByAuthor(library);
-document.querySelector(".shortest-book-by-author").innerHTML = Object.keys(shortestBookByAuthor).map(author => {
-    return `<li>${author}: ${shortestBookByAuthor[author]}</li>`;
-}).join("");
+// Display the results on the webpage using appendChild
+const resultsContainer = document.getElementById("results-container");
+
+// Books Published After a Given Year
+const yearInput = document.getElementById("year");
+yearInput.addEventListener("input", function () {
+    const year = parseInt(yearInput.value);
+    if (!isNaN(year)) {
+        const booksPublishedAfterYear = getBooksPublishedAfterYear(library, year);
+        const booksPublishedAfterYearElement = document.createElement("div");
+        booksPublishedAfterYearElement.innerHTML = "<h2>Books Published After " + year + ":</h2>";
+        const booksListElement = document.createElement("ul");
+        if (booksPublishedAfterYear.length > 0) {
+            booksPublishedAfterYear.forEach(title => {
+                const listItem = document.createElement("li");
+                listItem.textContent = title;
+                booksListElement.appendChild(listItem);
+            });
+        } else {
+            const listItem = document.createElement("li");
+            listItem.textContent = "No books found published after " + year;
+            booksListElement.appendChild(listItem);
+        }
+        booksPublishedAfterYearElement.appendChild(booksListElement);
+        resultsContainer.innerHTML = "";
+        resultsContainer.appendChild(booksPublishedAfterYearElement);
+    } else {
+        resultsContainer.innerHTML = "";
+    }
+});
+
+function displayResults() {
+    const totalPagesElement = document.querySelector(".total-pages");
+    const bookTitlesElement = document.querySelector(".book-titles");
+    const averagePagesElement = document.querySelector(".average-pages");
+    const longestBookElement = document.querySelector(".longest-book");
+    const authorsAndBooksElement = document.querySelector(".authors-and-books");
+    const totalPagesByAuthorElement = document.querySelector(".total-pages-by-author");
+    const shortestBookByAuthorElement = document.querySelector(".shortest-book-by-author");
+
+    // Total Number of Pages
+    const totalPageText = document.createTextNode("Total Number of Pages: " + getTotalPages(library));
+    totalPageText.textContent = "Total Number of Pages: " + getTotalPages(library);
+    totalPagesElement.appendChild(totalPageText);
+
+    // Book Titles
+    getBookTitles(library).forEach(title => {
+        const listItem = document.createElement("li");
+        listItem.textContent = title;
+        bookTitlesElement.appendChild(listItem);
+    });
+
+    // Average Number of Pages
+    const averagePagesText = document.createTextNode("Average Number of Pages: " + getAveragePages(library));
+    averagePagesElement.appendChild(averagePagesText);
+
+    // Longest Book
+    const longestBookText = document.createTextNode("Longest Book: " + getLongestBook(library));
+    longestBookElement.appendChild(longestBookText);
+
+    // Authors and Books
+    const authorsAndBooks = getAuthorsAndBooks(library);
+    for (const author in authorsAndBooks) {
+        const authorItem = document.createElement("li");
+        authorItem.textContent = author;
+        const bookList = document.createElement("ul");
+        authorsAndBooks[author].forEach(title => {
+            const bookItem = document.createElement("li");
+            bookItem.textContent = title;
+            bookList.appendChild(bookItem);
+        });
+        authorItem.appendChild(bookList);
+        authorsAndBooksElement.appendChild(authorItem);
+    }
+
+    // Total Pages by Author
+    const totalPagesByAuthor = getTotalPagesByAuthor(library);
+    for (const author in totalPagesByAuthor) {
+        const authorText = document.createTextNode(author + ": " + totalPagesByAuthor[author] + " pages");
+        const authorItem = document.createElement("li");
+        authorItem.appendChild(authorText);
+        totalPagesByAuthorElement.appendChild(authorItem);
+    }
+
+    // Shortest Book by Author
+    const shortestBookByAuthor = getShortestBookByAuthor(library);
+    for (const author in shortestBookByAuthor) {
+        const authorText = document.createTextNode(author + ": " + shortestBookByAuthor[author]);
+        const authorItem = document.createElement("li");
+        authorItem.appendChild(authorText);
+        shortestBookByAuthorElement.appendChild(authorItem);
+    }
+}
+
+displayResults();
